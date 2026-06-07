@@ -1,6 +1,6 @@
 # Options AI Platform
 
-Options AI Platform is a beginner-friendly options trading journal.
+Options AI Platform is a decision-support system for options traders. The platform is designed to evaluate trade ideas, apply risk controls, maintain an auditable journal, and eventually incorporate AI-assisted analysis and recommendation workflows.
 
 Right now, the project lets you save simple trade journal entries in a local
 SQLite database and view them in a small Streamlit web app.

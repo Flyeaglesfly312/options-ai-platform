@@ -59,6 +59,8 @@ if submitted:
         st.write(f"Confidence: {decision_result['confidence']}")
         st.write(f"Risk Score: {decision_result['risk_score']}")
         st.write(f"Technical Score: {technical_result['technical_score']}")
+        st.write(f"Trend: {technical_result['trend']}")
+        st.write(f"Technical Analysis Reason: {technical_result['reason']}")
         st.write(f"Reason: {decision_result['reason']}")
 
         st.write(f"Maximum Allowed Risk: ${risk_result['max_risk']:.2f}")

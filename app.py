@@ -86,6 +86,21 @@ if submitted:
 entries = list_journal_entries()
 
 if entries:
-    st.table(entries)
+    # Show only the most useful journal columns in the app.
+    # The database still keeps all of the original fields.
+    display_entries = []
+
+    for entry in entries:
+        display_entries.append(
+            {
+                "ticker": entry["ticker"],
+                "strategy": entry["strategy"],
+                "quantity": entry["quantity"],
+                "entry_price": entry["entry_price"],
+                "created_at": entry["created_at"],
+            }
+        )
+
+    st.dataframe(display_entries, use_container_width=True)
 else:
     st.info("No journal entries yet.")

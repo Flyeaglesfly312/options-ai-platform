@@ -1,21 +1,28 @@
-def generate_decision(ticker, risk_result):
-    """Create a simple trade decision from a risk check result."""
-    # risk_result is expected to come from can_take_trade() in risk_rules.py.
-    # It should include an "approved" value that is either True or False.
-    approved = risk_result["approved"]
+def generate_decision(ticker, technical_result, risk_result):
+    """Create a simple trade decision from technical analysis and risk checks."""
+    # technical_result is expected to come from analyze_ticker() in technical_agent.py.
+    # It should include a "technical_score" value from 1 to 10.
+    technical_score = technical_result["technical_score"]
 
-    if approved:
+    # Higher technical scores create higher confidence in this simple version.
+    if technical_score >= 7:
+        confidence = 80
+    elif technical_score >= 5:
+        confidence = 65
+    else:
+        confidence = 40
+
+    # For now, risk_score uses the same 1-10 value as the technical score.
+    risk_score = technical_score
+
+    if risk_result["approved"]:
         # If the risk check passed, the decision engine allows the trade.
         decision = "TRADE"
-        confidence = 75
-        risk_score = 8
-        reason = "Risk check passed."
+        reason = "Risk check passed. Technical score included."
     else:
         # If the risk check failed, the decision engine blocks the trade.
         decision = "NO TRADE"
-        confidence = 30
-        risk_score = 3
-        reason = "Risk check failed."
+        reason = "Risk check failed. Trade blocked."
 
     # Return a dictionary so other parts of the app can easily use this result.
     return {
@@ -28,6 +35,20 @@ def generate_decision(ticker, risk_result):
 
 
 if __name__ == "__main__":
+    strong_technical_result = {
+        "ticker": "AAPL",
+        "technical_score": 7,
+        "trend": "Bullish",
+        "reason": "Simulated technical analysis.",
+    }
+
+    weak_technical_result = {
+        "ticker": "XYZ",
+        "technical_score": 4,
+        "trend": "Bearish",
+        "reason": "Simulated technical analysis.",
+    }
+
     approved_risk_result = {
         "approved": True,
         "max_risk": 10,
@@ -42,9 +63,13 @@ if __name__ == "__main__":
         "message": "Trade rejected. Potential loss is higher than your risk limit.",
     }
 
-    print("Approved trade decision:")
-    print(generate_decision("NVDA", approved_risk_result))
+    print("Strong technical score + approved risk:")
+    print(generate_decision("AAPL", strong_technical_result, approved_risk_result))
     print()
 
-    print("Rejected trade decision:")
-    print(generate_decision("TSLA", rejected_risk_result))
+    print("Weak technical score + approved risk:")
+    print(generate_decision("XYZ", weak_technical_result, approved_risk_result))
+    print()
+
+    print("Rejected risk result:")
+    print(generate_decision("AAPL", strong_technical_result, rejected_risk_result))

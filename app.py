@@ -8,7 +8,9 @@ SRC_PATH = Path(__file__).resolve().parent / "src"
 sys.path.append(str(SRC_PATH))
 
 from journal import add_journal_entry, list_journal_entries
+from decision_engine import generate_decision
 from risk_rules import can_take_trade
+from technical_agent import analyze_ticker
 
 
 st.title("Options Trade Journal")
@@ -34,31 +36,52 @@ with st.form("journal_entry_form"):
     submitted = st.form_submit_button("Save Entry")
 
 if submitted:
-    risk_result = can_take_trade(
-        potential_loss=potential_loss,
-        account_size=account_size,
-        risk_percent=risk_percent,
-    )
+    if ticker:
+        # Step 1: Analyze the ticker with the Technical Agent.
+        technical_result = analyze_ticker(ticker)
 
-    st.write(f"Maximum Allowed Risk: ${risk_result['max_risk']:.2f}")
-    st.write(f"Potential Loss: ${risk_result['potential_loss']:.2f}")
-
-    if risk_result["approved"]:
-        st.success("Status: APPROVED")
-        add_journal_entry(
-            ticker=ticker,
-            strategy=strategy,
-            expiration_date=None,
-            strike_price=None,
-            quantity=quantity,
-            entry_price=entry_price,
-            exit_price=None,
-            notes=notes,
+        # Step 2: Check whether the trade fits the risk rules.
+        risk_result = can_take_trade(
+            potential_loss=potential_loss,
+            account_size=account_size,
+            risk_percent=risk_percent,
         )
-        st.success("Journal entry saved.")
+
+        # Step 3: Combine the technical result and risk result into one decision.
+        decision_result = generate_decision(
+            ticker=ticker,
+            technical_result=technical_result,
+            risk_result=risk_result,
+        )
+
+        st.subheader("Recommendation")
+        st.write(f"Decision: {decision_result['decision']}")
+        st.write(f"Confidence: {decision_result['confidence']}")
+        st.write(f"Risk Score: {decision_result['risk_score']}")
+        st.write(f"Technical Score: {technical_result['technical_score']}")
+        st.write(f"Reason: {decision_result['reason']}")
+
+        st.write(f"Maximum Allowed Risk: ${risk_result['max_risk']:.2f}")
+        st.write(f"Potential Loss: ${risk_result['potential_loss']:.2f}")
+
+        if decision_result["decision"] == "TRADE":
+            st.success("Status: APPROVED")
+            add_journal_entry(
+                ticker=ticker,
+                strategy=strategy,
+                expiration_date=None,
+                strike_price=None,
+                quantity=quantity,
+                entry_price=entry_price,
+                exit_price=None,
+                notes=notes,
+            )
+            st.success("Journal entry saved.")
+        else:
+            st.error("Status: REJECTED")
+            st.warning("Journal entry was not saved because the recommendation was NO TRADE.")
     else:
-        st.error("Status: REJECTED")
-        st.warning("Journal entry was not saved because it failed the risk check.")
+        st.error("Please enter a ticker before saving.")
 
 entries = list_journal_entries()
 

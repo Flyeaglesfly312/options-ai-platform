@@ -13,6 +13,28 @@ from risk_rules import can_take_trade
 from technical_agent import analyze_ticker
 
 
+def build_recommendation_report(risk_result, technical_result, decision_result):
+    """Create a clear text report that explains the recommendation."""
+    if risk_result["approved"]:
+        risk_status = "Passed"
+    else:
+        risk_status = "Failed"
+
+    return f"""Risk Check: {risk_status}
+
+Maximum Allowed Risk: ${risk_result["max_risk"]:.2f}
+Potential Loss: ${risk_result["potential_loss"]:.2f}
+
+Technical Score: {technical_result["technical_score"]}
+Trend: {technical_result["trend"]}
+
+Analysis:
+{technical_result["reason"]}
+
+Final Recommendation:
+{decision_result["decision"]}"""
+
+
 st.title("Options Trade Journal")
 
 with st.form("journal_entry_form"):
@@ -55,16 +77,9 @@ if submitted:
         )
 
         st.subheader("Recommendation")
-        st.write(f"Decision: {decision_result['decision']}")
+        st.text(build_recommendation_report(risk_result, technical_result, decision_result))
         st.write(f"Confidence: {decision_result['confidence']}")
-        st.write(f"Risk Score: {decision_result['risk_score']}")
-        st.write(f"Technical Score: {technical_result['technical_score']}")
-        st.write(f"Trend: {technical_result['trend']}")
-        st.write(f"Technical Analysis Reason: {technical_result['reason']}")
         st.write(f"Reason: {decision_result['reason']}")
-
-        st.write(f"Maximum Allowed Risk: ${risk_result['max_risk']:.2f}")
-        st.write(f"Potential Loss: ${risk_result['potential_loss']:.2f}")
 
         if decision_result["decision"] == "TRADE":
             st.success("Status: APPROVED")

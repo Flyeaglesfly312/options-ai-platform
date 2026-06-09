@@ -78,10 +78,13 @@ if submitted:
                 exit_price=None,
                 notes=notes,
             )
-            st.success("Journal entry saved.")
+            st.success("This trade passed the recommendation checks and was saved to your journal.")
+        elif decision_result["decision"] == "WATCHLIST":
+            st.info("Status: WATCHLIST")
+            st.warning("This setup is interesting, but not strong enough to save as a trade yet.")
         else:
             st.error("Status: REJECTED")
-            st.warning("Journal entry was not saved because the recommendation was NO TRADE.")
+            st.warning("This trade was not saved because the recommendation is NO TRADE.")
     else:
         st.error("Please enter a ticker before saving.")
 
